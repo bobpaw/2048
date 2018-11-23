@@ -9,6 +9,7 @@ namespace twentyfortyeight {
 		int * data_;
 		int *possible_;
 		bool moved_;
+		bool unmovable_;
 		std::default_random_engine random_device;
 
 		// Move functions
@@ -29,11 +30,15 @@ namespace twentyfortyeight {
 		// Getters
 		decltype(size_) size (void) const { return size_; }
 		decltype(moved_) moved (void) const { return moved_; }
+		decltype(unmovable_) unmovable (void) const { return unmovable_; }
 
 		// Constructors, Deconstructors
+		Grid () : Grid(4) {}
 		Grid (int size) : size_(size) {
 			data_ = new int[size_ * size_]();
 			possible_ = new int[size_ * size_]();
+			unmovable_ = false;
+			moved_ = false;
 		}
 
 		~Grid () {

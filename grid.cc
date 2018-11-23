@@ -115,7 +115,14 @@ namespace twentyfortyeight {
 		decltype(size_) nullcount = 0;
 		for (decltype(size_) i = 0; i < size_ * size_; ++i)
 			if (data_[i] == 0) ++nullcount;
-		if (nullcount == 0) return;
+		if (nullcount == 0) {
+			bool alright = false;
+			for (decltype(size_) y = 0; y < size_ - 1 && alright == false; ++y)
+				for (decltype(size_) x = 0; x < size_ - 1 && alright == false; ++x)
+					if (operator()(x, y) == operator()(x + 1, y) || operator()(x, y) == operator()(x, y + 1)) alright = true;
+			if (alright == false) unmovable_ = true;
+			return;
+		}
 		decltype(size_) *nos = new decltype(size_)[nullcount];
 		for (decltype(size_) i = 0, n = 0; i < nullcount; ++n)
 			if (data_[n] == 0) nos[i++] = n;
