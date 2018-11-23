@@ -2,18 +2,94 @@
 
 #include "grid.h"
 
+#define NCURSES_ERROR(fmt) do { if (!isendwin()) { curs_set(1); clear(); endwin(); delwin(stdscr); } \
+fputs(fmt, stderr); return -1; } while (0)
+
+std::size_t badlog2 (short n) {
+	switch (n) {
+	case 1:
+		return 0;
+	case 2:
+		return 1;
+	case 4:
+		return 2;
+	case 8:
+		return 3;
+	case 16:
+		return 4;
+	case 32:
+		return 5;
+	case 64:
+		return 6;
+	case 128:
+		return 7;
+	case 256:
+		return 8;
+	case 512:
+		return 9;
+	case 1024:
+		return 10;
+	case 2048:
+		return 11;
+	case 4096:
+		return 12;
+	case 8192:
+		return 13;
+	case 16384:
+		return 14;
+	}
+	return -1;
+}
+
 int main () {
 	WINDOW *board = NULL;
 	int ch = 0;
+	short *number_colors;
+	short *number_pairs;
 	twentyfortyeight::Grid game(4);
 	game.add(); game.add();
 	initscr();
 	raw();
 	curs_set(0);
 	noecho();
+	if (has_colors()) {
+		if (start_color() == ERR) NCURSES_ERROR("ncurses error: start_color\n");
+		number_pairs = new short[7 + 1]();
+		for (int i = 0; i < 8; ++i) number_pairs[i] = i + 1;
+		if (init_pair(number_pairs[0], COLOR_WHITE, COLOR_BLACK) == ERR) NCURSES_ERROR("ncurses error (init_pair): Empty cell\n");
+		if (can_change_color()) {
+			number_colors = new short[7 + 1]();
+			for (int i = 0; i < 7 + 8; ++i) number_colors[i] = i + 8;
+			#define NCURSES_INIT_NUM_COLOR(i, r, b, g) if (init_color(number_colors[ i ], r, b, g) == ERR) NCURSES_ERROR("ncurses error (init_color): Setting up colors for different numbers.\n")
+			NCURSES_INIT_NUM_COLOR(1, 937, 898, 843);
+			NCURSES_INIT_NUM_COLOR(2, 921, 875, 789);
+			NCURSES_INIT_NUM_COLOR(3, 937, 703, 468);
+			NCURSES_INIT_NUM_COLOR(4, 957, 582, 382);
+			NCURSES_INIT_NUM_COLOR(5, 992, 464, 355);
+			NCURSES_INIT_NUM_COLOR(6, 960, 367, 210);
+			NCURSES_INIT_NUM_COLOR(7, 929, 800, 449);
+			#undef NCURSES_INIT_NUM_COLOR
+
+			for (int i = 1; i < 8; ++i) {
+				if (init_pair(number_pairs[ i ], COLOR_WHITE, number_colors[ i ]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
+			}
+		} else {
+			#define NCURSES_INIT_NUM_PAIR(i, col) if (init_pair(number_pairs[ i ], COLOR_WHITE, COLOR_ ## col) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up non-changeable color pairs\n")
+			NCURSES_INIT_NUM_PAIR(1, BLACK);
+			NCURSES_INIT_NUM_PAIR(2, RED);
+			NCURSES_INIT_NUM_PAIR(3, GREEN);
+			NCURSES_INIT_NUM_PAIR(4, YELLOW);
+			NCURSES_INIT_NUM_PAIR(5, BLUE);
+			NCURSES_INIT_NUM_PAIR(6, MAGENTA);
+			NCURSES_INIT_NUM_PAIR(7, CYAN);
+			#undef NCURSES_INIT_NUM_PAIR
+		}
+	}
+
 	board = newwin(4 + 5, 4 * 5 + 5, 0, 0);
 	wtimeout(board, -1);
 	keypad(board, TRUE);
+
 
 	// Draw box
 	for (decltype(game.size()) y = 0; y < game.size(); ++y) {
@@ -66,7 +142,19 @@ int main () {
 		if (game.moved()) game.add();
 		for (decltype(game.size()) y = 0; y < game.size(); ++y) {
 			for (decltype(game.size()) x = 0; x < game.size(); ++x) {
-				mvwprintw(board, y * 2 + 1, x * 6 + 1, "%5d", game(x, y));
+				if (has_colors()) {
+					if (game(x, y) > 128) {
+						wattron(board, A_BLINK);
+						wattron(board, COLOR_PAIR(number_pairs[badlog2(game(x, y) >> 7)]));
+						mvwprintw(board, y * 2 + 1, x * 6 + 1, "%5d", game(x, y));
+						wattroff(board, COLOR_PAIR(number_pairs[badlog2(game(x, y) >> 7)]));
+						wattroff(board, A_BLINK);
+					} else {
+						wattron(board, COLOR_PAIR(number_pairs[badlog2(game(x, y))]));
+						mvwprintw(board, y * 2 + 1, x * 6 + 1, "%5d", game(x, y));
+						wattroff(board, COLOR_PAIR(number_pairs[badlog2(game(x, y))]));
+					}
+				}
 			}
 		}
 		wnoutrefresh(stdscr);
@@ -75,6 +163,8 @@ int main () {
 		ch = wgetch(board);
 		ch = tolower(ch);
 	}
+	if (has_colors()) delete[] number_pairs;
+	if (can_change_color()) delete[] number_colors;
 	werase(board);
 	delwin(board);
 	endwin();
