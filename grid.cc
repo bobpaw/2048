@@ -120,7 +120,7 @@ namespace twentyfortyeight {
 			for (decltype(size_) y = 0; y < size_ - 1 && alright == false; ++y)
 				for (decltype(size_) x = 0; x < size_ - 1 && alright == false; ++x)
 					if (operator()(x, y) == operator()(x + 1, y) || operator()(x, y) == operator()(x, y + 1)) alright = true;
-			if (alright == false) unmovable_ = true;
+			if (!alright) unmovable_ = true;
 			return;
 		}
 		decltype(size_) *nos = new decltype(size_)[nullcount];
