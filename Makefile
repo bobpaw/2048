@@ -10,7 +10,7 @@ test_grid: test_grid.cc grid.o
 	$(CC) $(MAKE_CFLAGS) $^ -o $@
 
 main: main.cc grid.o
-	$(CC) $(MAKE_CFLAGS) $(LFLAGS) $^ -o $@
+	$(CC) $(MAKE_CFLAGS) $^ -o $@ $(LFLAGS)
 
 %.o: %.cc %.h
 	$(CC) $(MAKE_CFLAGS) $< -c -o $@

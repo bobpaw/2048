@@ -1,4 +1,4 @@
-#include "ncurses.h"
+#include <ncurses.h>
 
 #include "grid.h"
 
@@ -70,7 +70,9 @@ int main () {
 			NCURSES_INIT_NUM_COLOR(7, 929, 800, 449);
 			#undef NCURSES_INIT_NUM_COLOR
 
-			for (int i = 1; i < 8; ++i) {
+				if (init_pair(number_pairs[1], COLOR_BLACK, number_colors[1]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
+				if (init_pair(number_pairs[2], COLOR_BLACK, number_colors[2]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
+			for (int i = 3; i < 8; ++i) {
 				if (init_pair(number_pairs[ i ], COLOR_WHITE, number_colors[ i ]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
 			}
 		} else {
