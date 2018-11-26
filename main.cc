@@ -86,7 +86,7 @@ int main () {
 		}
 	}
 
-	board = newwin(4 + 5, 4 * 5 + 5, 0, 0);
+	board = newwin(4 + 5 + 1, 4 * 5 + 5, 0, 0);
 	wtimeout(board, -1);
 	keypad(board, TRUE);
 
@@ -157,11 +157,13 @@ int main () {
 				}
 			}
 		}
+		if (game.unmovable()) mvwaddstr(board, 9, 0, "You lose! :(");
 		wnoutrefresh(stdscr);
 		wnoutrefresh(board);
 		doupdate();
 		ch = wgetch(board);
 		ch = tolower(ch);
+		if (game.unmovable()) ch = 'q';
 	}
 	if (has_colors()) delete[] number_pairs;
 	if (can_change_color()) delete[] number_colors;
