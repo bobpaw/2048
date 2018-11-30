@@ -1,9 +1,14 @@
-#include <ncurses.h>
+#include <curses.h>
 
 #include "grid.h"
+#include "config.h"
 
-#define NCURSES_ERROR(fmt) do { if (!isendwin()) { curs_set(1); clear(); endwin(); delwin(stdscr); } \
-fputs(fmt, stderr); return -1; } while (0)
+#define NCURSES_ERROR(func, msg) do { if (!isendwin()) { curs_set(1); clear(); endwin(); delwin(stdscr); } \
+fputs("ncurses error (" #func "): " msg "\n", stderr); return -1; } while (0)
+
+constexpr bool strings_equal(char const * a, char const * b) {
+	return *a == *b && (*a == '\0' || strings_equal(a + 1, b + 1));
+}
 
 std::size_t badlog2 (short n) {
 	switch (n) {
@@ -44,8 +49,8 @@ std::size_t badlog2 (short n) {
 int main () {
 	WINDOW *board = NULL;
 	int ch = 0;
-	short *number_colors;
-	short *number_pairs;
+	short *number_colors = NULL;
+	short *number_pairs = NULL;
 	twentyfortyeight::Grid game(4);
 	game.add(); game.add();
 	initscr();
@@ -53,14 +58,14 @@ int main () {
 	curs_set(0);
 	noecho();
 	if (has_colors()) {
-		if (start_color() == ERR) NCURSES_ERROR("ncurses error: start_color\n");
+		if (start_color() == ERR) NCURSES_ERROR(start_color, "Initializing color");
 		number_pairs = new short[7 + 1]();
 		for (int i = 0; i < 8; ++i) number_pairs[i] = i + 1;
-		if (init_pair(number_pairs[0], COLOR_WHITE, COLOR_BLACK) == ERR) NCURSES_ERROR("ncurses error (init_pair): Empty cell\n");
+		if (init_pair(number_pairs[0], COLOR_WHITE, COLOR_BLACK) == ERR) NCURSES_ERROR(init_pair, "Empty cell");
 		if (can_change_color()) {
 			number_colors = new short[7 + 1]();
 			for (int i = 0; i < 7 + 8; ++i) number_colors[i] = i + 8;
-			#define NCURSES_INIT_NUM_COLOR(i, r, b, g) if (init_color(number_colors[ i ], r, b, g) == ERR) NCURSES_ERROR("ncurses error (init_color): Setting up colors for different numbers.\n")
+			#define NCURSES_INIT_NUM_COLOR(i, r, b, g) if (init_color(number_colors[ i ], r, b, g) == ERR) NCURSES_ERROR(init_color, "Setting up colors for different numbers.")
 			NCURSES_INIT_NUM_COLOR(1, 937, 898, 843);
 			NCURSES_INIT_NUM_COLOR(2, 921, 875, 789);
 			NCURSES_INIT_NUM_COLOR(3, 937, 703, 468);
@@ -70,13 +75,20 @@ int main () {
 			NCURSES_INIT_NUM_COLOR(7, 929, 800, 449);
 			#undef NCURSES_INIT_NUM_COLOR
 
-				if (init_pair(number_pairs[1], COLOR_BLACK, number_colors[1]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
-				if (init_pair(number_pairs[2], COLOR_BLACK, number_colors[2]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
-			for (int i = 3; i < 8; ++i) {
-				if (init_pair(number_pairs[ i ], COLOR_WHITE, number_colors[ i ]) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up changed color pairs\n");
+			for (int i = 1; i < 8; ++i) {
+				#ifdef HAVE_ALLOC_PAIR
+				number_pairs[i] = alloc_pair((i < 3 ? COLOR_BLACK : COLOR_WHITE), number_colors[i]);
+				if (number_pairs[i] == -1) NCURSES_ERROR(alloc_pair, "Setting up changed color pairs.");
+				#else
+				if (init_pair(number_pairs[i], (i < 3 ? COLOR_BLACK : COLOR_WHITE), number_colors[i]) == ERR) NCURSES_ERROR(init_pair, "Setting up changed color pairs.");
+				#endif
 			}
 		} else {
-			#define NCURSES_INIT_NUM_PAIR(i, col) if (init_pair(number_pairs[ i ], COLOR_WHITE, COLOR_ ## col) == ERR) NCURSES_ERROR("ncurses error (init_pair): Setting up non-changeable color pairs\n")
+			#ifdef HAVE_ALLOC_PAIR
+			#define NCURSES_INIT_NUM_PAIR(i, col) if ((number_pairs[ i ] = alloc_pair(COLOR_WHITE, COLOR_ ## col)) == -1) NCURSES_ERROR(alloc_pair, "Setting up non-changeable color pairs.")
+			#else
+			#define NCURSES_INIT_NUM_PAIR(i, col) if (init_pair(number_pairs[ i ], COLOR_WHITE, COLOR_ ## col) == ERR) NCURSES_ERROR(init_pair, "Setting up non-changeable color pairs.")
+			#endif
 			NCURSES_INIT_NUM_PAIR(1, BLACK);
 			NCURSES_INIT_NUM_PAIR(2, RED);
 			NCURSES_INIT_NUM_PAIR(3, GREEN);
@@ -91,7 +103,6 @@ int main () {
 	board = newwin(4 + 5 + 1, 4 * 5 + 5, 0, 0);
 	wtimeout(board, -1);
 	keypad(board, TRUE);
-
 
 	// Draw box
 	for (decltype(game.size()) y = 0; y < game.size(); ++y) {
@@ -165,10 +176,15 @@ int main () {
 		doupdate();
 		ch = wgetch(board);
 		ch = tolower(ch);
-		if (game.unmovable()) ch = 'q';
 	}
-	if (has_colors()) delete[] number_pairs;
-	if (can_change_color()) delete[] number_colors;
+	if (has_colors() && number_pairs != NULL) delete[] number_pairs;
+	if (can_change_color() && number_pairs != NULL) delete[] number_colors;
+	#ifdef HAVE_USE_DEFAULT_COLORS
+	use_default_colors();
+	#endif
+	#ifdef HAVE_RESET_COLOR_PAIRS
+	reset_color_pairs();
+	#endif
 	werase(board);
 	delwin(board);
 	endwin();

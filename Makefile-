@@ -1,5 +1,5 @@
 CC=g++
-MAKE_CFLAGS=-g -pedantic -Wall -Wextra $(CFLAGS)
+MAKE_CFLAGS=-g -pedantic -Wall -Wextra -std=c++17 -O2 $(CFLAGS)
 LFLAGS=-lncurses
 
 PROGRAMS=test_grid main

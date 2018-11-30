@@ -1,0 +1,5 @@
+AM_OPTIONS = gnu
+AM_CXXFLAGS = -Wall -Wextra -pedantic
+AM_CPPFLAGS = -I$(srcdir) -I.
+bin_PROGRAMS = main
+main_SOURCES = main.cc grid.cc grid.h
