@@ -127,11 +127,10 @@ namespace twentyfortyeight {
 			}
 			return;
 		}
-		decltype(size_) *nos = new decltype(size_)[nullcount];
+
 		for (decltype(size_) i = 0, n = 0; i < nullcount; ++n)
 			if (data_[n] == 0) nos[i++] = n;
 		int place = nos[random_device() % nullcount];
 		data_[place] = number;
-		delete[] nos;
 	}
 } // namespace twentyfortyeight

@@ -57,10 +57,10 @@ int main (int argc, char *argv[]) {
 		}
 	}
 
-	WINDOW *board = NULL;
+	WINDOW *board = nullptr;
 	int ch = 0;
-	short *number_colors = NULL;
-	short *number_pairs = NULL;
+	auto number_colors = std::make_unique<short[]>(7 + 1);
+	auto number_pairs = std::make_unique<short[]>(7 + 1);
 	twentyfortyeight::Grid game(4);
 	game.add(); game.add();
 	initscr();
@@ -69,11 +69,9 @@ int main (int argc, char *argv[]) {
 	noecho();
 	if (has_colors()) {
 		if (start_color() == ERR) NCURSES_ERROR(start_color, "Initializing color");
-		number_pairs = new short[7 + 1]();
 		for (int i = 0; i < 8; ++i) number_pairs[i] = i + 1;
 		if (init_pair(number_pairs[0], COLOR_WHITE, COLOR_BLACK) == ERR) NCURSES_ERROR(init_pair, "Empty cell");
 		if (can_change_color()) {
-			number_colors = new short[7 + 1]();
 			for (int i = 0; i < 7 + 8; ++i) number_colors[i] = i + 8;
 			#define NCURSES_INIT_NUM_COLOR(i, r, b, g) if (init_color(number_colors[ i ], r, b, g) == ERR) NCURSES_ERROR(init_color, "Setting up colors for different numbers.")
 			NCURSES_INIT_NUM_COLOR(1, 937, 898, 843);
@@ -187,8 +185,6 @@ int main (int argc, char *argv[]) {
 		ch = wgetch(board);
 		ch = tolower(ch);
 	}
-	if (has_colors() && number_pairs != NULL) delete[] number_pairs;
-	if (can_change_color() && number_pairs != NULL) delete[] number_colors;
 	#ifdef HAVE_USE_DEFAULT_COLORS
 	use_default_colors();
 	#endif
