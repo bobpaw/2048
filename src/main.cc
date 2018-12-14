@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <curses.h>
 
 #include "grid.h"
@@ -10,7 +12,7 @@ constexpr bool strings_equal(char const * a, char const * b) {
 	return *a == *b && (*a == '\0' || strings_equal(a + 1, b + 1));
 }
 
-std::size_t badlog2 (short n) {
+constexpr std::size_t badlog2 (short n) {
 	switch (n) {
 	case 1:
 		return 0;
@@ -46,7 +48,15 @@ std::size_t badlog2 (short n) {
 	return -1;
 }
 
-int main () {
+int main (int argc, char *argv[]) {
+	for (decltype(argc) i = 1; i < argc; ++i) {
+		if (strings_equal(argv[i], "-V")) {
+			std::cout << PACKAGE_STRING << std::endl;
+			std::cout << "Please contact " PACKAGE_BUGREPORT " for bug reports." << std::endl;
+			return 0;
+		}
+	}
+
 	WINDOW *board = NULL;
 	int ch = 0;
 	short *number_colors = NULL;
