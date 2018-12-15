@@ -1,4 +1,5 @@
 #include "grid.h"
+#include <iostream>
 
 namespace twentyfortyeight {
 	void Grid::moveUp (void) {
@@ -120,14 +121,16 @@ namespace twentyfortyeight {
 			for (decltype(size_) y = 0; y < size_ - 1 && alright == false; ++y)
 				for (decltype(size_) x = 0; x < size_ - 1 && alright == false; ++x)
 					if (operator()(x, y) == operator()(x + 1, y) || operator()(x, y) == operator()(x, y + 1)) alright = true;
-			if (!alright) unmovable_ = true;
+			if (!alright) {
+				unmovable_ = true;
+				std::cerr << "Unmovable" << std::endl;
+			}
 			return;
 		}
-		decltype(size_) *nos = new decltype(size_)[nullcount];
+
 		for (decltype(size_) i = 0, n = 0; i < nullcount; ++n)
 			if (data_[n] == 0) nos[i++] = n;
 		int place = nos[random_device() % nullcount];
 		data_[place] = number;
-		delete[] nos;
 	}
 } // namespace twentyfortyeight
