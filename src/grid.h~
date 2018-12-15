@@ -26,7 +26,7 @@ namespace twentyfortyeight {
 			return possible_[y * size_ + x];
 		}
 
-	public:
+		public:
 
 		enum Direction { up, down, left, right };
 
