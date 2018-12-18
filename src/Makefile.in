@@ -270,7 +270,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 main_SOURCES = main.cc grid.cc grid.h
+main_LFLAGS = -lncurses -ldl
 test_grid_SOURCES = test_grid.cc grid.cc
+test_grid_LFLAGS = -lncurses -ldl
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

@@ -195,5 +195,6 @@ int main (int argc, char *argv[]) {
 	delwin(board);
 	endwin();
 	delwin(stdscr);
+	_nc_free_and_exit(0);
 	return 0;
 }
