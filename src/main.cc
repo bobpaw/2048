@@ -1,4 +1,5 @@
 #include <iostream>
+#include <array>
 
 #include <curses.h>
 
@@ -59,8 +60,8 @@ int main (int argc, char *argv[]) {
 
 	WINDOW *board = nullptr;
 	int ch = 0;
-	auto number_colors = std::make_unique<short[]>(7 + 1);
-	auto number_pairs = std::make_unique<short[]>(7 + 1);
+	std::array<int, 7 + 1> number_colors;
+	std::array<int, 7 + 1> number_pairs;
 	twentyfortyeight::Grid game(4);
 	game.add(); game.add();
 	initscr();
