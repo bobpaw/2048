@@ -73,7 +73,7 @@ int main (int argc, char *argv[]) {
 		for (int i = 0; i < 8; ++i) number_pairs[i] = i + 1;
 		if (init_pair(number_pairs[0], COLOR_WHITE, COLOR_BLACK) == ERR) NCURSES_ERROR(init_pair, "Empty cell");
 		if (can_change_color()) {
-			for (int i = 0; i < 7 + 8; ++i) number_colors[i] = i + 8;
+			for (int i = 0; i < 8; ++i) number_colors[i] = i + 8;
 			#define NCURSES_INIT_NUM_COLOR(i, r, b, g) if (init_color(number_colors[ i ], r, b, g) == ERR) NCURSES_ERROR(init_color, "Setting up colors for different numbers.")
 			NCURSES_INIT_NUM_COLOR(1, 937, 898, 843);
 			NCURSES_INIT_NUM_COLOR(2, 921, 875, 789);
